@@ -19,6 +19,8 @@ def set_properties(project):
     project.build_depends_on("bump2version")
     project.build_depends_on("flask==1.1.1")
     project.build_depends_on("gunicorn==20.0.4")
+    project.depends_on('json-logging')
+    project.depends_on('pyyaml')
 
 
 @task

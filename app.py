@@ -7,6 +7,7 @@ from pathlib import Path
 
 from flask import Flask, request, jsonify
 
+from logging_conf import setup_logging
 
 app = Flask(__name__)
 
@@ -14,6 +15,8 @@ app = Flask(__name__)
 base_path = Path("/base")
 env_var = os.environ.get("MYVAR", "unset")
 
+
+setup_logging(jsonformat=True)
 app_logger = logging.getLogger(__name__)
 
 
@@ -21,8 +24,7 @@ app_logger = logging.getLogger(__name__)
 def hello_world():
     greeting_target = os.environ.get('GREETING_TARGET', 'World')
     app_logger.info(f'HEADERS: [{request.headers}]')
-    # These logs only show when running the flask app as python process
-    # DONT show in docker
+    # Need to specify StreamHandler for these logs to show in the container. (always show in python app.py)
     return 'Hello {}!\n'.format(greeting_target)
 
 
