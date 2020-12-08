@@ -172,4 +172,3 @@ class CustomJSONFormatter(logging.Formatter):
             "python.pid": record.process
         }
         return json_log_object
-
