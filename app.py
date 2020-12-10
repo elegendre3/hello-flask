@@ -7,7 +7,7 @@ from pathlib import Path
 
 from flask import Flask, request, jsonify
 
-from logging_conf import setup_logging, setup_logging_from_flask
+from logging_conf import setup_logger, setup_logger_from_flask
 
 app = Flask(__name__)
 
@@ -17,8 +17,12 @@ env_var = os.environ.get("MYVAR", "unset")
 
 # try to set up headers as extra fields
 # setup_logging(jsonformat=True, extra={'props': request.headers})
-setup_logging(jsonformat=True)
-app_logger = logging.getLogger(__name__)
+app_logger = setup_logger(__name__, jsonformat=True)
+
+
+@app.route('/', methods=['GET'])
+def index():
+    return "Hello! This will be the index page."
 
 
 @app.route('/v1/models/hello-world:predict', methods=['GET', 'POST'])
@@ -34,7 +38,7 @@ def hello_world():
 def hello_world_headers():
     greeting_target = os.environ.get('GREETING_TARGET', 'World')
 
-    setup_logging_from_flask("Host", "User-Agent", "Postman-Token")
+    setup_logger_from_flask("Host", "User-Agent", "Postman-Token")
     request_logger = logging.getLogger(__name__)  # no effect it seems
     request_logger.info('This message should have some header fields in it.')  # does not show
     logging.info('This message should have some header fields in it.') # this shows

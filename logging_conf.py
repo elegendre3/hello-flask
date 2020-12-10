@@ -3,10 +3,11 @@ import json
 import logging
 import logging.config
 from pathlib import Path
+import sys
 import traceback
-from yaml import safe_load as yaml_load
 
 import json_logging
+from yaml import safe_load as yaml_load
 
 CONFIG_YML = {
     'version': 1,
@@ -35,11 +36,12 @@ CONFIG_YML = {
 }
 
 
-def setup_logging(
+def setup_logger(
+        name: str,
         config_path: Path = None,
         jsonformat: bool = True,
         extra: dict() = {"props": {}},
-):
+) -> logging.Logger:
     """
     Sets up logging configuration according to RAVNML standards (default) or to a yaml config file (arg: config_path).
     Default format will be JSON - set jsonformat=False for string/stream format.
@@ -49,50 +51,61 @@ def setup_logging(
     """
     tolog = []  # backlog of messages to log when logger ready
 
-    if config_path:
-        try:
-            logging.config.dictConfig(yaml_load(config_path.open('r')))
-        except FileNotFoundError:
-            raise FileNotFoundError(f'Could not find logging config file at [{config_path}].')
-    else:
-        logging.config.dictConfig(CONFIG_YML)
-        tolog.append("No config passed, using RAVNML default")
-
-    METRIC_LEVELV_NUM = 50
-
-    logging.addLevelName(METRIC_LEVELV_NUM, 'METRIC')
-
-    def metric(self, message, *args, **kwargs):
-        if self.isEnabledFor(METRIC_LEVELV_NUM):
-            self._log(METRIC_LEVELV_NUM, message, args, **kwargs)
-
-    logging.Logger.metric = metric
-
     if jsonformat:
-
+        tolog.append('Logging configured to JSON format.')
         # Need to wrap CustomJSONFormatter because it has a special configuration
         # and we need to pass the class constructor, not an instance
         try:
             extra["props"]
         except KeyError as e:
             raise KeyError(str(e) + 'Needs to be of the format: extra={"props": {"extra_field_1": "value1", ...}}')
-
+        #
         custom_json_formatter = CustomJSONFormatter(extra["props"])
 
         class JsonFormatter(logging.Formatter):
             def format(self, record):
                 return custom_json_formatter.format(record)
 
-        json_logging.init_non_web(enable_json=True, custom_formatter=JsonFormatter,)
-        tolog.append('Logging configured to JSON format.')
+        json_logging.init_non_web(enable_json=True, custom_formatter=JsonFormatter, )
+
+        logger = logging.getLogger(name)
+        # removing pre-existing handlers (this can happen when using seldoncore framework)
+        while len(logger.handlers) > 0:
+            logger.removeHandler(logger.handlers[0])
+        logger.setLevel(logging.INFO)
+        logger.addHandler(logging.StreamHandler(sys.stdout))
+
     else:
         tolog.append('Logging configured to string/stream format.')
 
+        if config_path:
+            try:
+                logging.config.dictConfig(yaml_load(config_path.open('r')))
+            except FileNotFoundError:
+                raise FileNotFoundError('Could not find logging config file at [{}].'.format(config_path))
+        else:
+            logging.config.dictConfig(CONFIG_YML)
+            tolog.append("No config passed, using RAVNML default")
+
+        METRIC_LEVELV_NUM = 50
+
+        logging.addLevelName(METRIC_LEVELV_NUM, 'METRIC')
+
+        def metric(self, message, *args, **kwargs):
+            if self.isEnabledFor(METRIC_LEVELV_NUM):
+                self._log(METRIC_LEVELV_NUM, message, args, **kwargs)
+
+        logging.Logger.metric = metric
+
+        logger = logging.getLogger(name)
+
     for msg in tolog:
-        logging.info(msg)
+        logger.info(msg)
+
+    return logger
 
 
-def setup_logging_from_flask(*args):
+def setup_logger_from_flask(name: str, *args) -> logging.Logger:
     """
     Seldon Core uses flask as http server.
     This function allows to initialize the logger with some of the headers as extra fields.
@@ -100,13 +113,38 @@ def setup_logging_from_flask(*args):
     tolog = []
     extra_fields = {"props": {}}
 
+    default_headers = {
+        'action': "X-Action",
+        'customerId': "X-Customer-Id",
+        'modelId': "X-Model-Id",
+        'projectId': "X-Project-Id",
+        'userId': "X-User-Id",
+        'requestId': "X-Request-Id",
+        'runId': "X-Run-Id",
+        'deploymentId': "X-Deployment-Id"
+    }
+
     try:
         from flask import request
 
-        for f in args:
-            extra_fields["props"][f] = request.headers.get(f, "NotFound")
+        for f in default_headers.keys():
+            header_val = request.headers.get(default_headers[f], None)
+            # Only adding a field if we can retrieve it
+            if header_val:
+                extra_fields["props"][f] = header_val
+            else:
+                tolog.append(f'Could not find header [{default_headers[f]}].')
 
-        tolog.append(f'Succesfully retrieved headers [{list(extra_fields["props"].keys())}].')
+        for f in args:
+            if f not in default_headers:
+                extra_val = request.headers.get(f, "NotFound")
+                # Only adding a field if we can retrieve it
+                if extra_val:
+                    extra_fields["props"][f] = extra_val
+                else:
+                    tolog.append(f'Could not find header [{f}].')
+
+        tolog.append(f'Successfully retrieved headers [{list(extra_fields["props"].keys())}].')
 
     except ModuleNotFoundError:
         tolog.extend([
@@ -114,10 +152,18 @@ def setup_logging_from_flask(*args):
             'Could not retrieve any header information.',
             'Using default Json logger with no extra fields.',
         ])
+    except RuntimeError:
+        tolog.extend([
+            'This was called outside of Request Context.',
+            'Needs an active HTTP Request.',
+            'Using default Json logger with no extra fields.',
+        ])
 
-    setup_logging(jsonformat=True, extra=extra_fields)
+    logger = setup_logger(name, jsonformat=True, extra=extra_fields)
     for m in tolog:
-        logging.info(m)
+        logger.info(m)
+
+    return logger
 
 
 class CustomJSONFormatter(logging.Formatter):
@@ -150,14 +196,14 @@ class CustomJSONFormatter(logging.Formatter):
             record.props.update(self.extra_props)
         else:
             record.props = self.extra_props
-        json_log_object['data'].update(record.props)
+        json_log_object.update(record.props)
 
         return json.dumps(json_log_object)
 
     @staticmethod
     def _formatting_func(record):
         json_log_object = {
-            "@timestamp": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+            "@timestamp": datetime.utcnow().isoformat(),
             "level": record.levelname,
             "message": record.getMessage(),
             "caller": record.filename + '::' + record.funcName
