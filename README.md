@@ -1,5 +1,5 @@
 # hello-flask
-Hello world flask app
+Hello world + gpt3 flask app
 
 ## Set Up pyb Repo
 $ python -m venv venv
@@ -9,6 +9,8 @@ $ pyb --start-project
 ## Run Flask app 
 $ export FLASK_APP=app.py
 $ python -m flask run
+OR
+$ python app.py
 
 ## Build docker image
 $ docker build . -t hello-flask:0.0.1

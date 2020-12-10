@@ -5,8 +5,9 @@ import logging
 import os
 from pathlib import Path
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 
+from gpt3 import parties
 from logging_conf import setup_logger, setup_logger_from_flask
 
 app = Flask(__name__)
@@ -17,12 +18,12 @@ env_var = os.environ.get("MYVAR", "unset")
 
 # try to set up headers as extra fields
 # setup_logging(jsonformat=True, extra={'props': request.headers})
-app_logger = setup_logger(__name__, jsonformat=True)
+app_logger = setup_logger(__name__, jsonformat=False)
 
 
 @app.route('/', methods=['GET'])
 def index():
-    return "Hello! This will be the index page."
+    return render_template("index.html")
 
 
 @app.route('/v1/models/hello-world:predict', methods=['GET', 'POST'])
@@ -49,6 +50,71 @@ def hello_world_headers():
 @app.route('/v1/models/jsonify-request:predict', methods=['POST'])
 def to_json():
     return jsonify(request.json)
+
+
+@app.route('/v1/models/static/partyextractor:predict', methods=['POST'])
+def partyextractor_gpt3_static():
+    prompt = 'as of the date of the last signature below, effective May 17, 2010 by and between ' \
+             'Elsinore Services, Inc., a Delaware corporation ("Client"), and FaceTime Strategy LLC, a ' \
+             'Virginia limited liability company ("FaceTime"), and provides as follows:'
+    # response = parties(prompt)
+    response = {"choices": [{"text": " my first party\n2. Second party here", "finish_reason": "blah blah reason"}]}
+    html_wrapper = """
+    <html>
+    <body>
+    <h1>{}</h1>
+    <p style="color:#3382FF";>{}</p>
+    <p>{}</p>
+    <p style="color:#3382FF";>{}</p>
+    <pre>{}</pre>
+    <p style="color:#99A1A7";>{}</p>
+    </body>
+    </html>
+    """
+
+    output = html_wrapper.format(
+        "Party Extraction",
+        'Parties Clause:',
+        prompt,
+        'What GPT3 thinks:',
+        '1.{}'.format(response["choices"][0]["text"]),
+        'Finish Reason: [{}]'.format(response["choices"][0]["finish_reason"])
+    )
+
+    return output
+
+
+@app.route('/v1/models/partyextractor:predict', methods=['POST'])
+def partyextractor_gpt3():
+    prompt = request.data.decode("utf-8")
+    app_logger.info("prompt")
+    app_logger.info(prompt)
+
+    # response = parties(prompt)
+    response = {"choices": [{"text": " my first party\n2. Second party here", "finish_reason": "blah blah reason"}]}
+
+    html_wrapper = """
+        <html>
+        <body>
+        <pre>{}</pre>
+        <p style="color:#99A1A7";>{}</p>
+        <br>
+        <br>
+        </body>
+        </html>
+        """
+
+    output = html_wrapper.format(
+        '1.{}'.format(response["choices"][0]["text"]),
+        'Finish Reason: [{}]'.format(response["choices"][0]["finish_reason"])
+    )
+
+    return jsonify({"parties": output})
+
+
+@app.route('/v1/models/partyextractor:index', methods=['GET'])
+def partyextractor_index():
+    return render_template("partyextractor_index.html")
 
 
 if __name__ == "__main__":
