@@ -90,8 +90,8 @@ def partyextractor_gpt3():
     app_logger.info("prompt")
     app_logger.info(prompt)
 
-    # response = parties(prompt)
-    response = {"choices": [{"text": " my first party\n2. Second party here", "finish_reason": "blah blah reason"}]}
+    response = parties(prompt)
+    # response = {"choices": [{"text": " my first party\n2. Second party here", "finish_reason": "blah blah reason"}]}
 
     html_wrapper = """
         <html>

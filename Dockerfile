@@ -1,3 +1,5 @@
+# syntax = docker/dockerfile:1.0-experimental
+
 # Use the official lightweight Python image.
 # https://hub.docker.com/_/python
 FROM python:3.6-slim
@@ -5,10 +7,16 @@ FROM python:3.6-slim
 # Copy local code to the container image.
 ENV APP_HOME /app
 WORKDIR $APP_HOME
-COPY logging_conf.py app.py requirements.txt ./
+COPY logging_conf.py app.py gpt3.py requirements.txt ./
+ADD templates ./templates
+ADD static ./static
 
 # Install production dependencies.
 RUN pip install --no-cache-dir -r ./requirements.txt
+
+
+#RUN --mount=type=secret,id=mysecret,dst=/openai_key.secret \
+#    ENV OPENAI_KEY=$(cat /openai_key.secret)
 
 
 # Run flask app alone (no gunicorn)
