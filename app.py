@@ -4,11 +4,13 @@
 import logging
 import os
 from pathlib import Path
+import json
 
 from flask import Flask, request, jsonify, render_template
 
 from gpt3 import parties
-from logging_conf import setup_logger, setup_logger_from_flask
+from ner_spacy import predict
+from logging_conf import setup
 
 app = Flask(__name__)
 
@@ -18,7 +20,9 @@ env_var = os.environ.get("MYVAR", "unset")
 
 # try to set up headers as extra fields
 # setup_logging(jsonformat=True, extra={'props': request.headers})
-app_logger = setup_logger(__name__, jsonformat=False)
+
+setup(json_enabled=False)
+app_logger = logging.getLogger("ravnml")
 
 
 @app.route('/', methods=['GET'])
@@ -39,7 +43,7 @@ def hello_world():
 def hello_world_headers():
     greeting_target = os.environ.get('GREETING_TARGET', 'World')
 
-    setup_logger_from_flask("Host", "User-Agent", "Postman-Token")
+    # setup_logger_from_flask("Host", "User-Agent", "Postman-Token")
     request_logger = logging.getLogger(__name__)  # no effect it seems
     request_logger.info('This message should have some header fields in it.')  # does not show
     logging.info('This message should have some header fields in it.') # this shows
@@ -115,6 +119,27 @@ def partyextractor_gpt3():
 @app.route('/v1/models/partyextractor:index', methods=['GET'])
 def partyextractor_index():
     return render_template("partyextractor_index.html")
+
+
+@app.route('/spacy/ner', methods=['GET'])
+def ner():
+    return render_template("ner.html")
+
+
+@app.route('/spacy/ner/predict', methods=['POST'])
+def ner_predict():
+    app_logger.info("NER Predict request received")
+
+    data = request.data.decode("utf-8")
+    text = json.loads(data)['text']
+    app_logger.info("Input: ")
+    app_logger.info(text)
+    return predict(text)
+
+@app.route('/hackathon/index', methods=['GET'])
+def hackathon_index():
+    app_logger.info("Hackathon Index Page")
+    return render_template("hackathon_index.html")
 
 
 if __name__ == "__main__":

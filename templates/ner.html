@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>NER Testing</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type="application/javascript" src="../static/js/ner.js"></script>
+    <link rel="shortcut icon" href="favicon.ico">
+    <style>
+      input {
+         display: flex;
+         flex-wrap: wrap;
+         align-content: center;
+      }
+      mark.DATE {
+        background-color: #F2D7D5;
+      }
+      mark.EVENT {
+        background-color: #D1F2EB;
+      }
+      mark.FAC {
+        background-color: #D4E6F1;
+      }
+      mark.GPE {
+        background-color: #FCF3CF;
+      }
+      mark.LANGUAGE {
+        background-color: #DCF3CF;
+      }
+      mark.LAW {
+        background-color: #858CEA;
+      }
+      mark.LOC {
+        background-color: #BF93F0;
+      }
+      mark.MONEY {
+        background-color: #F9FFC1;
+      }
+      mark.NORP {
+        background-color: #FFE3F6;
+      }
+      mark.ORDINAL {
+        background-color: #6D5959;
+      }
+      mark.ORG {
+        background-color: #387780;
+      }
+      mark.PERCENT {
+        background-color: #9DCBBA;
+      }
+      mark.PERSON {
+        background-color: #A0B9C6;
+      }
+      mark.PRODUCT {
+        background-color: #779BE7;
+      }
+      mark.QUANTITY {
+        background-color: #C1BDDB;
+      }
+      mark.TIME {
+        background-color: #D6F7A3;
+      }
+      mark.WORK_OF_ART {
+        background-color: #FF7B9C;
+      }
+      mark.O {
+        background-color: white;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Named Entity Recognition with Spacy</h2>
+      <br/>
+      <form id="text-form">
+        <div class="row form-group">
+          <div class="col">
+            <select id="ner-clf" class="form-control">
+              <option>Available models</option>
+            </select>
+          </div>
+          <div class="col">
+            <select id="ner-model" class="form-control">
+              <option value="en_core_web_sm">CNN (en_core_web_sm)</option>
+              <option value="en_core_web_trf">Transformers (not implemented)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <textarea class="form-control" id="ner-text" rows="7">(1) Tesco, Ltd. a company incorporated and registered in England and Wales (company number 1990710) whose registered office is at Redrow House, St. David's Park, Flintshire CH5 3RX (the "Grantor")
+          </textarea>
+        </div>
+        <div class="form-group">
+            <input class="btn btn-primary" type="submit" value="Extract" />
+        </div>
+      </form>
+      <br/>
+      <span>Color codes :
+        <mark class="CARDINAL">CARDINAL</mark>
+        <mark class="DATE">DATE</mark>
+        <mark class="EVENT">EVENT</mark>
+        <mark class="FAC">FAC</mark>
+        <mark class="GPE">GPE</mark>
+        <mark class="LANGUAGE">LANGUAGE</mark>
+        <mark class="LAW">LAW</mark>
+        <mark class="LOC">LOC</mark>
+        <mark class="MONEY">MONEY</mark>
+        <mark class="NORP">NORP</mark>
+        <mark class="ORDINAL">ORDINAL</mark>
+        <mark class="ORG">ORG</mark>
+        <mark class="PERCENT">PERCENT</mark>
+        <mark class="PERSON">PERSON</mark>
+        <mark class="PRODUCT">PRODUCT</mark>
+        <mark class="QUANTITY">QUANTITY</mark>
+        <mark class="TIME">TIME</mark>
+        <mark class="WORK_OF_ART">WORK_OF_ART</mark>
+      </span>
+      <br/>
+      <br/>
+      <div id="resp">
+      </div>
+    </div>
+  </body>
+</html>

@@ -21,6 +21,7 @@ def set_properties(project):
     project.build_depends_on("gunicorn==20.0.4")
     project.depends_on('json-logging')
     project.depends_on('pyyaml')
+    project.depends_on("spacy==3.0")
 
 
 @task

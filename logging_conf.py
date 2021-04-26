@@ -4,6 +4,7 @@ import logging
 import logging.config
 from pathlib import Path
 import sys
+import re
 import traceback
 
 import json_logging
@@ -36,82 +37,30 @@ CONFIG_YML = {
 }
 
 
-def setup_logger(
-        name: str,
-        config_path: Path = None,
-        jsonformat: bool = True,
-        extra: dict() = {"props": {}},
-) -> logging.Logger:
-    """
-    Sets up logging configuration according to RAVNML standards (default) or to a yaml config file (arg: config_path).
-    Default format will be JSON - set jsonformat=False for string/stream format.
-    Argument "extras" allows to pass extra fields to the logger, using the "extra" mechanism enabled by json-logging.
-    Format: extra={"props": {"extra_field_1": "value1", ...}}. Will raise Exception if "props" is absent.
-    Ignored if jsonformat=False.
-    """
-    tolog = []  # backlog of messages to log when logger ready
-
-    if jsonformat:
-        tolog.append('Logging configured to JSON format.')
-        # Need to wrap CustomJSONFormatter because it has a special configuration
-        # and we need to pass the class constructor, not an instance
-        try:
-            extra["props"]
-        except KeyError as e:
-            raise KeyError(str(e) + 'Needs to be of the format: extra={"props": {"extra_field_1": "value1", ...}}')
-        #
-        custom_json_formatter = CustomJSONFormatter(extra["props"])
-
-        class JsonFormatter(logging.Formatter):
-            def format(self, record):
-                return custom_json_formatter.format(record)
-
-        json_logging.init_non_web(enable_json=True, custom_formatter=JsonFormatter, )
-
-        logger = logging.getLogger(name)
-        # removing pre-existing handlers (this can happen when using seldoncore framework)
-        while len(logger.handlers) > 0:
-            logger.removeHandler(logger.handlers[0])
-        logger.setLevel(logging.INFO)
-        logger.addHandler(logging.StreamHandler(sys.stdout))
-
+def setup(json_enabled: bool, config_path: Path = None):
+    tolog = []
+    if json_enabled:
+        json_logging.init_non_web(enable_json=True, custom_formatter=CustomJSONFormatter)
+        tolog.append("Logging configured to JSON format.")
     else:
-        tolog.append('Logging configured to string/stream format.')
-
         if config_path:
-            try:
-                logging.config.dictConfig(yaml_load(config_path.open('r')))
-            except FileNotFoundError:
-                raise FileNotFoundError('Could not find logging config file at [{}].'.format(config_path))
+            logging.config.dictConfig(yaml_load(config_path.open('r')))
         else:
             logging.config.dictConfig(CONFIG_YML)
-            tolog.append("No config passed, using RAVNML default")
+            tolog.append("No config was found, using RAVNML default.")
 
-        METRIC_LEVELV_NUM = 50
-
-        logging.addLevelName(METRIC_LEVELV_NUM, 'METRIC')
-
-        def metric(self, message, *args, **kwargs):
-            if self.isEnabledFor(METRIC_LEVELV_NUM):
-                self._log(METRIC_LEVELV_NUM, message, args, **kwargs)
-
-        logging.Logger.metric = metric
-
-        logger = logging.getLogger(name)
-
-    for msg in tolog:
-        logger.info(msg)
-
-    return logger
+    # Configure root logger
+    logger = logging.getLogger("")
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler(sys.stdout)
+    handler.addFilter(ContextFilter())
+    logger.addHandler(handler)
+    for m in tolog:
+        logger.info(m)
 
 
-def setup_logger_from_flask(name: str, *args) -> logging.Logger:
-    """
-    Seldon Core uses flask as http server.
-    This function allows to initialize the logger with some of the headers as extra fields.
-    """
-    tolog = []
-    extra_fields = {"props": {}}
+def _get_ravnml_headers(*args):
+    extra_fields = {}
 
     default_headers = {
         'action': "X-Action",
@@ -131,45 +80,58 @@ def setup_logger_from_flask(name: str, *args) -> logging.Logger:
             header_val = request.headers.get(default_headers[f], None)
             # Only adding a field if we can retrieve it
             if header_val:
-                extra_fields["props"][f] = header_val
-            else:
-                tolog.append(f'Could not find header [{default_headers[f]}].')
+                extra_fields[f] = header_val
 
         for f in args:
             if f not in default_headers:
                 extra_val = request.headers.get(f, "NotFound")
                 # Only adding a field if we can retrieve it
                 if extra_val:
-                    extra_fields["props"][f] = extra_val
-                else:
-                    tolog.append(f'Could not find header [{f}].')
+                    extra_fields[f] = extra_val
 
-        tolog.append(f'Successfully retrieved headers [{list(extra_fields["props"].keys())}].')
-
-    except ModuleNotFoundError:
-        tolog.extend([
-            'flask package not installed.',
-            'Could not retrieve any header information.',
-            'Using default Json logger with no extra fields.',
-        ])
     except RuntimeError:
-        tolog.extend([
-            'This was called outside of Request Context.',
-            'Needs an active HTTP Request.',
-            'Using default Json logger with no extra fields.',
-        ])
+        # Outside of request context
+        pass
+    except ModuleNotFoundError:
+        # missing dependency
+        pass
 
-    logger = setup_logger(name, jsonformat=True, extra=extra_fields)
-    for m in tolog:
-        logger.info(m)
+    return extra_fields
 
-    return logger
+
+def _get_ravnml_env_vars():
+    import os
+
+    prefix = 'ravnml_'
+    pattern = '^{}(.+)'.format(prefix)
+
+    extra_fields = {}
+
+    env_vars = os.environ
+
+    for v in env_vars:
+        m = re.match(pattern, v)
+        if m:
+            extra_fields[m.groups()[0]] = env_vars[v]
+    return extra_fields
+
+
+class ContextFilter(logging.Filter):
+    def filter(self, record):
+        ravnml_headers = _get_ravnml_headers()
+        ravnml_env_vars = _get_ravnml_env_vars()
+        if hasattr(record, 'props'):
+            record.props = {**record.props, **ravnml_headers, **ravnml_env_vars}
+        else:
+            record.props = {**ravnml_headers, **ravnml_env_vars}
+        return True
 
 
 class CustomJSONFormatter(logging.Formatter):
     """
     Customized logger
     """
+
     def __init__(self, extra_props: dict() = {}):
         super(CustomJSONFormatter).__init__()
         self.extra_props = extra_props
@@ -218,3 +180,11 @@ class CustomJSONFormatter(logging.Formatter):
             "python.pid": record.process
         }
         return json_log_object
+
+
+if __name__ == "__main__":
+    setup(json_enabled=True)
+
+    main_logger = logging.getLogger("ravnml")
+    main_logger.debug("Test - ravnml")
+    main_logger.info("Test - ravnml")
