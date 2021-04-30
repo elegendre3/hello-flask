@@ -7,7 +7,7 @@ use_plugin("python.flake8")
 use_plugin("python.coverage")
 use_plugin("python.distutils")
 use_plugin("python.install_dependencies")
-use_plugin("pypi:pybuilder_docker", version="0.3.0")
+use_plugin("pypi:pybuilder_docker", version="0.1.12")
 
 name = "hello-flask"
 version = '0.0.dev1'

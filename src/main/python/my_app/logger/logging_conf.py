@@ -47,7 +47,7 @@ def setup(json_enabled: bool, config_path: Path = None):
             logging.config.dictConfig(yaml_load(config_path.open('r')))
         else:
             logging.config.dictConfig(CONFIG_YML)
-            tolog.append("No config was found, using RAVNML default.")
+            tolog.append("No config was found, using default.")
 
     # Configure root logger
     logger = logging.getLogger("")
@@ -185,6 +185,6 @@ class CustomJSONFormatter(logging.Formatter):
 if __name__ == "__main__":
     setup(json_enabled=True)
 
-    main_logger = logging.getLogger("ravnml")
-    main_logger.debug("Test - ravnml")
-    main_logger.info("Test - ravnml")
+    main_logger = logging.getLogger("test_logger")
+    main_logger.debug("Test - logger")
+    main_logger.info("Test - logger")
