@@ -1,0 +1,48 @@
+h1 {
+    border: 3px #eee solid;
+    color: #3b69f2;
+    font-size: 50px;
+    text-align: center;
+    padding: 10px;
+}
+
+h2 {
+    letter-spacing: 0.03em;
+}
+
+h3 {
+    font-weight: lighter;
+    font-style: oblique;
+    margin: 10px 0 30px 0;
+}
+
+.container {
+    margin: 50px;
+    font-family: "helvetica";
+}
+
+
+
+
+
+
+.all-graphs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+
+.graph {
+    box-shadow: 0 15px 30px rgb(150 170 180 / 50%);
+    border-radius: 3px;
+    width: 30%;
+    margin: 20px;
+}
+
+
+.graph-content {
+    padding: 5px 30px 40px 30px;
+    color: #42658A;
+
+}

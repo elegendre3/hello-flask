@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="iManage Data Science">
+    <title>KG · Demo</title>
+
+
+    <!-- Bootstrap core CSS -->
+<!--    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">-->
+
+    <!-- Custom styles for this template -->
+    <link href="/static/css/main.css" rel="stylesheet">
+
+<!--     Try to get from public-->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<!--    <script type="application/javascript" src="../static/js/hackathon_index.js"></script>-->
+
+    <style>
+      input {
+         display: flex;
+         flex-wrap: wrap;
+         align-content: center;
+      }
+      mark.C0 {
+        background-color: #F2D7D5;
+      }
+      mark.C1 {
+        background-color: #D1F2EB;
+      }
+      mark.C2 {
+        background-color: #D4E6F1;
+      }
+      mark.C3 {
+        background-color: #FCF3CF;
+      }
+      mark.C4 {
+        background-color: #DCF3CF;
+      }
+      mark.C5 {
+        background-color: #858CEA;
+      }
+      mark.C6 {
+        background-color: #BF93F0;
+      }
+      mark.C7 {
+        background-color: #F9FFC1;
+      }
+      mark.C8 {
+        background-color: #FFE3F6;
+      }
+      mark.O {
+        background-color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+        <!-- Fixed navbar -->
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+            <a class="navbar-brand" href="#">Knowledge Graph</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item active"><a class="nav-link" href="./index">Overview</a></li>
+              <li class="nav-item"><a class="nav-link" href="./search">Search</a></li>
+              <li class="nav-item"><a class="nav-link" href="./graph">Graph</a></li>
+            </ul>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <h1 class="mt-5">Overview</h1>
+        <p class="lead">
+        Summary of what your organization has worked on.
+        </p>
+
+        <div class="all-graphs">
+            <div class="graph-card">
+                <div class="graph-title">
+                    Scatter Plot of []
+                </div>
+                <div class="graph">
+                    <svg id="dataviz_area_2"></svg>
+                </div>
+            </div>
+            <div class="graph-card">
+                <div class="graph-title">
+                    Histogram of [cities population]
+                </div>
+                <div class="graph">
+                    <svg id="dataviz_area_3" height=200 width=450></svg>
+                </div>
+            </div>
+            <div class="graph-card">
+                <div class="graph-title">
+                    GRAPH 1 PLACEHOLDER
+                </div>
+                <div class="graph">
+                    <svg>
+                      <circle class="graph1" style="fill: #69b3a2" stroke="black" cx=50 cy=50 r=40></circle>
+                    </svg>
+                </div>
+            </div>
+            <div class="graph-card">
+                <div class="graph-title">
+                    GRAPH 2 PLACEHOLDER
+                </div>
+                <div class="graph">
+                    <svg id="dataviz_area" height=200 width=450></svg>
+                </div>
+            </div>
+            <div class="graph-card">
+                <div class="graph-title">
+                    Histogram of [] (from d3 page)
+                </div>
+                <div class="graph">
+                    <script>
+                        chart = {
+                          var margin = {top: 10, right: 10, bottom: 20, left: 25},
+                            width = 300 - margin.left - margin.right,
+                            height = 150 - margin.top - margin.bottom;
+
+                          const svg = d3.create("svg")
+                              .attr("viewBox", [0, 0, width, height]);
+
+                          // Create data
+                          var data = [ {name:England & Wales, value:20}, {name:France, value:3}, {name:Illinois, value:50}, {name:State of NY, value:30} ]
+
+                          const bar = svg.append("g")
+                              .attr("fill", "steelblue")
+                            .selectAll("rect")
+                            .data(data)
+                            .join("rect")
+                              .style("mix-blend-mode", "multiply")
+                              .attr("x", d => x(d.name))
+                              .attr("y", d => y(d.value))
+                              .attr("height", d => y(0) - y(d.value))
+                              .attr("width", x.bandwidth());
+
+                          const gx = svg.append("g")
+                              .call(xAxis);
+
+                          const gy = svg.append("g")
+                              .call(yAxis);
+
+                          return Object.assign(svg.node(), {
+                            update(order) {
+                              x.domain(data.sort(order).map(d => d.name));
+
+                              const t = svg.transition()
+                                  .duration(750);
+
+                              bar.data(data, d => d.name)
+                                  .order()
+                                .transition(t)
+                                  .delay((d, i) => i * 20)
+                                  .attr("x", d => x(d.name));
+
+                              gx.transition(t)
+                                  .call(xAxis)
+                                .selectAll(".tick")
+                                  .delay((d, i) => i * 20);
+                            }
+                          });
+                        }
+                    </script>
+                </div>
+            </div>
+            <div class="graph-card">
+                <div class="graph-title">
+                    Joins
+                </div>
+                <div class="graph">
+                    <svg id="dataviz_area_4">
+                        <circle r="10" cx="16" cy="40"/>
+                        <circle r="10" cx="32" cy="40"/>
+                        <circle r="10" cx="64" cy="40"/>
+                        <circle r="10" cx="128" cy="40"/>
+                        <circle r="10" cx="256" cy="40"/>
+                    </svg>
+                </div>
+            </div>
+          </div>
+
+        <!-- Load d3.js -->
+        <script src="https://d3js.org/d3.v4.js"></script>
+        <script>
+        d3
+          .select(".graph1")  // select the elements that have the class 'target'
+          .style("stroke-width", 8) // change their style: stroke width is not equal to 8 pixels
+          .style("opacity", 0.8)
+        </script>
+        <script>
+            var svg = d3.select("#dataviz_area")
+            var x = d3.scaleLinear()
+            .domain([0, 100])         // This is the min and the max of the data: 0 to 100 if percentages
+            .range([10, 400]);       // This is the corresponding value I want in Pixel
+            svg.call(d3.axisBottom(x));
+            svg.append("circle")
+              .attr("cx", x(1)).attr("cy", 2).attr("r", 40).style("fill", "blue");
+            svg.append("circle")
+              .attr("cx", x(50)).attr("cy", 70).attr("r", 40).style("fill", "red");
+            svg.append("circle")
+              .attr("cx", x(100)).attr("cy", 100).attr("r", 40).style("fill", "green");
+        </script>
+        <script>
+        var margin = {top: 10, right: 10, bottom: 20, left: 25},
+            width = 300 - margin.left - margin.right,
+            height = 150 - margin.top - margin.bottom;
+
+        // append the svg object to the body of the page
+        var sVg = d3.select("#dataviz_area_2")
+          .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+          // translate this svg element to leave some margin.
+          .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // X scale and Axis
+        var x = d3.scaleLinear()
+            .domain([0, 100])         // This is the min and the max of the data: 0 to 100 if percentages
+            .range([0, width]);       // This is the corresponding value I want in Pixel
+        sVg
+          .append('g')
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x));
+
+        // Y scale and Axis
+        var y = d3.scaleLinear()
+            .domain([0, 100])         // This is the min and the max of the data: 0 to 100 if percentages
+            .range([height, 0]);       // This is the corresponding value I want in Pixel
+        sVg
+          .append('g')
+          .call(d3.axisLeft(y));
+
+        // Create data
+        var data = [ {x:10, y:20}, {x:40, y:90}, {x:80, y:50} ]
+
+        // Add 3 dots for 0, 50 and 100%
+        sVg
+          .selectAll("whatever")
+          .data(data)
+          .enter()
+          .append("circle")
+            .attr("cx", function(d){ return x(d.x) })
+            .attr("cy", function(d){ return y(d.y) })
+            .attr("r", 4)
+
+        </script>
+        <script>
+        var svg = d3.select("#dataviz_area_3")
+
+        var cities = [
+          { name: 'London', population: 8674000},
+          { name: 'New York', population: 8406000},
+          { name: 'Sydney', population: 4293000},
+          { name: 'Paris', population: 2244000},
+          { name: 'Beijing', population: 11510000}
+        ];
+
+        svg.append("rect")
+              .attr("height", "0").attr("width", "0").style("fill", "blue").style("opacity", "0.7");
+        svg.append("rect")
+              .attr("height", "0").attr("width", "0").style("fill", "blue").style("opacity", "0.7");
+        svg.append("rect")
+              .attr("height", "0").attr("width", "0").style("fill", "blue").style("opacity", "0.7");
+        svg.append("rect")
+              .attr("height", "0").attr("width", "0").style("fill", "blue").style("opacity", "0.7");
+        svg.append("rect")
+              .attr("height", "0").attr("width", "0").style("fill", "blue").style("opacity", "0.7");
+        svg.append("text")
+              .attr("x", "0").attr("y", "0").attr("class", "small");
+        svg.append("text")
+              .attr("x", "0").attr("y", "0").attr("class", "small");
+        svg.append("text")
+              .attr("x", "0").attr("y", "0").attr("class", "small");
+        svg.append("text")
+              .attr("x", "0").attr("y", "0").attr("class", "small");
+        svg.append("text")
+              .attr("x", "0").attr("y", "0").attr("class", "small");
+
+        // Join cities to rect elements and modify height, width and position
+        svg.selectAll('rect')
+          .data(cities)
+          .attr('x', 80)
+          .attr('height', 19)
+          .attr('width', function(d) {
+            var scaleFactor = 0.00004;
+            return d.population * scaleFactor;
+          })
+          .attr('y', function(d, i) {
+            return i * 20;
+          })
+
+        // Join cities to text elements and modify content and position
+        svg.selectAll('text')
+          .data(cities)
+          .attr('y', function(d, i) {
+            return i * 20 + 13;
+          })
+          .attr('x', 10)
+          .text(function(d) {
+            return d.name;
+          });
+        </script>
+        <script>
+            var SVg = d3.select("#dataviz_area_4")
+
+            var scores = [
+                {
+                "name": "Andy",
+                "score": 8
+                },
+                {
+                "name": "Beth",
+                "score": 6
+                },
+                {
+                "name": "Craig",
+                "score": 20
+                },
+                {
+                "name": "Diane",
+                "score": 12
+                },
+                {
+                "name": "Evelyn",
+                "score": 30
+                }
+            ]
+            // Join
+            SVg.selectAll('circle')
+                .data(scores);
+
+            SVg.selectAll('circle')
+                .attr('r', function(d) {
+                    return d.score;
+                })
+                .classed('high', function(d) {
+                    return d.score >= 15;
+                })
+                  .attr('cx', function(d, i) {
+                    return (i * 64) + 10;
+                });
+        </script>
+
+    </div>
+<!--    <script type="application/javascript" src="../node_modules/jquery/dist/jquery.min.js"></script>-->
+<!--    <script type="application/javascript" src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>-->
+<!--    <script type="application/javascript" src="../js/ner.js"></script>-->
+  </body>
+</html>
