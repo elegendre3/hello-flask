@@ -1,6 +1,5 @@
 # hello-flask
-Hello world flask app with docker 
-+ gpt3
+Hello world flask app with docker packaging
 
 ## Set Up Env
 ### venv
@@ -31,4 +30,4 @@ OR
 `$ docker run -d -p 0.0.0.:5000:5000 hello-flask:0.0.<v>`
 
 ## Call service
-`$ curl http://{host}:{port}/v1/models/hello-world:predict`
+`$ curl http://{host}:{port}/hello-world:predict`
