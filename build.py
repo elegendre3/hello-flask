@@ -7,7 +7,7 @@ use_plugin("python.flake8")
 use_plugin("python.coverage")
 use_plugin("python.distutils")
 use_plugin("python.install_dependencies")
-
+# use_plugin("pypi:pybuilder_docker", version="0.2.dev0")
 
 name = "hello-flask"
 version = '0.0.dev1'
@@ -21,7 +21,11 @@ def set_properties(project):
     project.build_depends_on("gunicorn==20.0.4")
     project.depends_on('json-logging')
     project.depends_on('pyyaml')
-
+    project.depends_on('openai')
+    project.include_file("my_app.static.css", "style.css")
+    project.include_file("my_app.templates", "index.html")
+    project.include_file("my_app.templates", "party_extractor.html")
+    # project.include_file("my_app.openai", "vectorizer.pkl")
 
 @task
 def bump_version(project: Project):

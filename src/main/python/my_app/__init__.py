@@ -7,8 +7,8 @@ from pathlib import Path
 
 from flask import Flask, request, jsonify, render_template
 
-from gpt3 import parties
-from logging_conf import setup_logger, setup_logger_from_flask
+from src.main.python.my_app.openai.gpt3 import parties
+from src.main.python.my_app.logging.logging_conf import setup_logger, setup_logger_from_flask
 
 app = Flask(__name__)
 
@@ -115,7 +115,3 @@ def partyextractor_gpt3():
 @app.route('/v1/models/partyextractor:index', methods=['GET'])
 def partyextractor_index():
     return render_template("partyextractor_index.html")
-
-
-if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
