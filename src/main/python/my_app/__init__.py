@@ -8,6 +8,7 @@ from pathlib import Path
 from flask import Flask, request, jsonify, render_template
 
 from my_app.logger.logging_conf import setup
+from my_app.gpt3 import parties
 
 # init
 base_path = Path("/base")
@@ -36,5 +37,47 @@ def create_app(test_config=None, instance_path=None):
     @app.route('/v1/models/jsonify-request', methods=['POST'])
     def to_json():
         return jsonify(request.json)
+
+    @app.route('/home', methods=['GET'])
+    def home():
+        app_logger.info('home endpoint')
+        return render_template("home.html")
+
+    @app.route('/reco', methods=['GET'])
+    def reco():
+        app_logger.info('reco endpoint')
+        return render_template("recommendation.html")
+
+    @app.route('/gpt', methods=['GET'])
+    def gpt():
+        app_logger.info('gpt endpoint')
+        return render_template("gpt.html")
+
+    @app.route('/gpt:predict', methods=['POST'])
+    def partyextractor_gpt3():
+        prompt = request.data.decode("utf-8")
+        app_logger.info("prompt")
+        app_logger.info(prompt)
+
+        response = parties(prompt)
+        # response = {"choices": [{"text": " my first party\n2. Second party here", "finish_reason": "blah blah reason"}]}
+
+        html_wrapper = """
+            <html>
+            <body>
+            <pre>{}</pre>
+            <p style="color:#99A1A7";>{}</p>
+            <br>
+            <br>
+            </body>
+            </html>
+            """
+
+        output = html_wrapper.format(
+            '1.{}'.format(response["choices"][0]["text"]),
+            'Finish Reason: [{}]'.format(response["choices"][0]["finish_reason"])
+        )
+
+        return jsonify({"parties": output})
 
     return app

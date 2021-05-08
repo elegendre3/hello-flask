@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <title>Recommendation · Demo</title>
+
+<!--     Custom styles for this template -->
+<!--    <link href="/static/css/style.css" rel="stylesheet">-->
+
+    <!-- Try to get from public-->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  </head>
+  <body>
+    <header>
+        <!-- Fixed navbar -->
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+            <a class="navbar-brand" href="#">Flask App</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item"><a class="nav-link" href="./home">Home</a></li>
+              <li class="nav-item"><a class="nav-link" href="./reco">Reco</a></li>
+              <li class="nav-item"><a class="nav-link active" href="./gpt">GPT-3</a></li>
+            </ul>
+            </div>
+        </nav>
+    </header>
+    <script>
+        function GPT3Call(text) {
+        fetch('/gpt:predict', {method:"POST", mode:"cors", body:text})
+          .then(function(response) {
+            return response.json();
+          })
+        .then(function(myJson) {
+          var s = document.getElementById('resp');
+          s.innerHTML = myJson["parties"];
+        });
+      }
+
+    </script>
+    <div class="container">
+        <br>
+        <h1 class="mt-5">GPT-3 Party Extractor Demo</h1>
+        <p class="lead">
+        Extract Parties using GPT-3.
+        </p>
+        <br>
+        <form action="javascript:GPT3Call(docInput.value)">
+            <div class="form-group">
+                  <label for="docInput">Parties Clause:</label>
+                  <textarea class="form-control" id="docInput" rows="7">as of the date of the last signature below, effective May 17, 2010 by and between Elsinore Services, Inc., a Delaware corporation ("Client"), and FaceTime Strategy LLC, a Virginia limited liability company ("FaceTime"), and provides as follows:</textarea>
+            </div>
+            <div>
+                <input type="submit" value="Extract Parties Names and Definition"/>
+            </div>
+        </form>
+        <br>
+        <br>
+        <h5>Extracted entities:</h5>
+        <div id="resp"></div>
+        <br>
+    </div>
+  </body>
+</html>

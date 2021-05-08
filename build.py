@@ -19,6 +19,7 @@ def set_properties(project):
     project.depends_on("flask==1.1.1")
     project.depends_on('json-logging')
     project.depends_on('pyyaml')
+    project.depends_on('openai')
     project.include_file("my_app.static.css", "style.css")
     project.include_file("my_app.templates", "index.html")
     # project.include_file("my_app.openai", "vectorizer.pkl")
